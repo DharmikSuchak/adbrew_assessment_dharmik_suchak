@@ -11,10 +11,30 @@ db = MongoClient(mongo_uri)['test_db']
 class TodoListView(APIView):
 
     def get(self, request):
-        # Implement this method - return all todo items from db instance above.
-        return Response({}, status=status.HTTP_200_OK)
+        try:
+            todos_cursor = db.todos.find()
+            todos = []
+            for todo in todos_cursor:
+                todos.append({
+                    'id': str(todo['_id']),
+                    'description': todo.get('description', '')
+                })
+            return Response(todos, status=status.HTTP_200_OK)
+        except Exception as e:
+            logging.error(f"Error fetching todos: {e}")
+            return Response({'error': 'Failed to fetch todos'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def post(self, request):
-        # Implement this method - accept a todo item in a mongo collection, persist it using db instance above.
-        return Response({}, status=status.HTTP_200_OK)
-
+        description = request.data.get('description', '').strip()
+        if not description:
+            return Response({'error': 'Description is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = db.todos.insert_one({'description': description})
+            return Response({
+                'id': str(result.inserted_id),
+                'description': description
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logging.error(f"Error creating todo: {e}")
+            return Response({'error': 'Failed to create todo'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
