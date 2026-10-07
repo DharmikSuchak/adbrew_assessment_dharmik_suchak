@@ -1,0 +1,17 @@
+# Node
+node_modules/
+yarn.lock
+
+# Python
+__pycache__/
+*.pyc
+
+# Database
+db/
+WiredTiger
+mongod.lock
+sizeStorer.wt
+storage.bson
+collection*.wt
+index*.wt
+mydatabase
