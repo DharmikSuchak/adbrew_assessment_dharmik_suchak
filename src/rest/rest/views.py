@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import json, logging, os
 from pymongo import MongoClient
+from bson import ObjectId
 
 mongo_uri = 'mongodb://' + os.environ["MONGO_HOST"] + ':' + os.environ["MONGO_PORT"]
 db = MongoClient(mongo_uri)['test_db']
@@ -38,3 +39,14 @@ class TodoListView(APIView):
         except Exception as e:
             logging.error(f"Error creating todo: {e}")
             return Response({'error': 'Failed to create todo'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TodoDetailView(APIView):
+    def delete(self, request, todo_id):
+        try:
+            result = db.todos.delete_one({'_id': ObjectId(todo_id)})
+            if result.deleted_count == 1:
+                return Response({'status': 'deleted'}, status=status.HTTP_200_OK)
+            return Response({'error': 'Todo not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logging.error(f"Error deleting todo: {e}")
+            return Response({'error': 'Failed to delete todo'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -56,6 +56,21 @@ export function App() {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      setError('');
+      const response = await fetch(`http://localhost:8000/todos/${id}/`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete TODO');
+      }
+      await fetchTodos(); // Refetch list after successful deletion
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="App">
       <div>
@@ -69,7 +84,12 @@ export function App() {
               <li>No TODOs yet!</li>
             ) : (
               todos.map(todo => (
-                <li key={todo.id}>{todo.description}</li>
+                <li key={todo.id} style={{ marginBottom: '10px' }}>
+                  {todo.description}{' '}
+                  <button onClick={() => handleDelete(todo.id)} style={{ color: 'red', marginLeft: '10px' }}>
+                    Delete
+                  </button>
+                </li>
               ))
             )}
           </ul>
